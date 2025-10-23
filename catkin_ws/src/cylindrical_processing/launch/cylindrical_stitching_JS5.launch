@@ -1,0 +1,80 @@
+<launch>
+  <!-- ⬇️ 參數與 pano stitching 相關 args（你的第一份） -->
+  <arg name="left_topic"               default="/camera1_fix/color/image_raw/compressed"/>
+  <arg name="mid_topic"                default="/camera2_fix/color/image_raw/compressed"/>
+  <arg name="right_topic"              default="/camera3_fix/color/image_raw/compressed"/>
+  <arg name="output_topic"             default="/camera_pano_stitched/image_raw/compressed"/>
+  <arg name="focals"                   default="[200,200,200]"/>
+  <arg name="global_homo_left_file"    default="$(find cylindrical_processing)/src/cylindrical_homo/global_H1/JS5/H1_000043.npy"/>
+  <arg name="global_homo_right_file"   default="$(find cylindrical_processing)/src/cylindrical_homo/global_H2/JS5/H2_000043.npy"/>
+  <arg name="crop_rect"                default="[300,90,600,300]"/>
+
+  <!-- <arg name="global_homo_left_file"    default="$(find cylindrical_processing)/src/cylindrical_homo/global_H1/JS5/H1_000104.npy"/>
+  <arg name="global_homo_right_file"   default="$(find cylindrical_processing)/src/cylindrical_homo/global_H2/JS5/H2_000104.npy"/>
+  <arg name="crop_rect"                default="[258,70,650,325]"/> -->
+
+  <arg name="per_homo_left_dir"        default="$(find cylindrical_processing)/src/cylindrical_homo/per_H1"/>
+  <arg name="per_homo_right_dir"       default="$(find cylindrical_processing)/src/cylindrical_homo/per_H2"/>
+  <arg name="save_pano_dir"            default="$(find cylindrical_processing)/src/cylindrical_homo/result"/>
+  <arg name="jpeg_quality"             default="100"/>
+  <arg name="blend_width"              default="30"/>
+  <arg name="orb_max_features"         default="2000"/>
+
+  <!-- 🟢 RTSP 相機 node (取消註解使用) -->
+  <node name="multi_rtsp_to_compressed_node"
+        pkg="image_processing"
+        type="rtsp_to_compressed_image_JS5.py"
+        output="screen" />
+
+  <node pkg="image_processing" type="fisheye_undistorter.py" name="undistorter1" output="screen">
+      <param name="input_topic" value="/camera1/color/image_raw/compressed"/>
+      <param name="output_topic" value="/camera1_fix/color/image_raw/compressed"/>
+      <param name="factor" value="1.0"/>
+      <param name="K" value="[[2.94104211e+02, 1.00501200e-01, 3.17351129e+02],[0.00000000e+00,3.90626759e+02,2.44645859e+02],[0,0,1]]"/>
+      <param name="D" value="[[-0.15439177], [ 0.45612835], [-0.79521684], [ 0.46727377]]"/>
+      <param name="balance" value="1.0"/>
+      <param name="crop_fov_deg" value="90.0"/>
+      <param name="full_hfov" value="150.0"/>
+  </node>
+  <node pkg="image_processing" type="fisheye_undistorter.py" name="undistorter2" output="screen">
+      <param name="input_topic" value="/camera2/color/image_raw/compressed"/>
+      <param name="output_topic" value="/camera2_fix/color/image_raw/compressed"/>
+      <param name="factor" value="1.0"/>
+      <param name="K" value="[[2.94104211e+02, 1.00501200e-01, 3.17351129e+02],[0.00000000e+00,3.90626759e+02,2.44645859e+02],[0,0,1]]"/>
+      <param name="D" value="[[-0.15439177], [ 0.45612835], [-0.79521684], [ 0.46727377]]"/>
+      <param name="balance" value="1.0"/>
+      <param name="crop_fov_deg" value="90.0"/>
+      <param name="full_hfov" value="150.0"/>
+  </node>
+  <node pkg="image_processing" type="fisheye_undistorter.py" name="undistorter3" output="screen">
+      <param name="input_topic" value="/camera3/color/image_raw/compressed"/>
+      <param name="output_topic" value="/camera3_fix/color/image_raw/compressed"/>
+      <param name="factor" value="1.0"/>
+      <param name="K" value="[[2.94104211e+02, 1.00501200e-01, 3.17351129e+02],[0.00000000e+00,3.90626759e+02,2.44645859e+02],[0,0,1]]"/>
+      <param name="D" value="[[-0.15439177], [ 0.45612835], [-0.79521684], [ 0.46727377]]"/>
+      <param name="balance" value="1.0"/>
+      <param name="crop_fov_deg" value="90.0"/>
+      <param name="full_hfov" value="150.0"/>
+  </node>
+
+  <!-- 🟣 全景拼接 node -->
+  <node name="cuda_orb_pano_stitcher"
+        pkg="cylindrical_processing"
+        type="cylindrical_stitching_node.py"
+        output="screen">
+    <param name="~left_topic"              value="$(arg left_topic)"/>
+    <param name="~mid_topic"               value="$(arg mid_topic)"/>
+    <param name="~right_topic"             value="$(arg right_topic)"/>
+    <param name="~output_topic"            value="$(arg output_topic)"/>
+    <param name="~focals"                  value="$(arg focals)"/>
+    <param name="~global_homo_left_file"   value="$(arg global_homo_left_file)"/>
+    <param name="~global_homo_right_file"  value="$(arg global_homo_right_file)"/>
+    <param name="~per_homo_left_dir"       value="$(arg per_homo_left_dir)"/>
+    <param name="~per_homo_right_dir"      value="$(arg per_homo_right_dir)"/>
+    <param name="~save_pano_dir"           value="$(arg save_pano_dir)"/>
+    <param name="~jpeg_quality"            value="$(arg jpeg_quality)"/>
+    <param name="~blend_width"             value="$(arg blend_width)"/>
+    <param name="~orb_max_features"        value="$(arg orb_max_features)"/>
+    <param name="~crop_rect"               value="$(arg crop_rect)"/>
+  </node>
+</launch>

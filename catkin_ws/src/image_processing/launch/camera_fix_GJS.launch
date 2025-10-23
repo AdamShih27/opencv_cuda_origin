@@ -1,0 +1,39 @@
+<launch>
+    <!-- 🟢 RTSP 相機 node (取消註解使用) -->
+  <!-- <node name="multi_rtsp_to_compressed_node"
+        pkg="image_processing"
+        type="rtsp_to_compressed_image_GJS.py"
+        output="screen" /> -->
+
+  <node pkg="image_processing" type="fisheye_undistorter.py" name="undistorter1" output="screen">
+      <param name="input_topic" value="/camera1/color/image_raw/compressed"/>
+      <param name="output_topic" value="/camera1_fix/color/image_raw/compressed"/>
+      <param name="factor" value="1.0"/>
+      <param name="K" value="[[268.06554187, 1.51263281, 320],[0, 356.57309093, 231.71146684],[0, 0, 1.]]"/>
+      <param name="D" value="[[0.05184647],[0.01756823],[-0.02638422],[0.00762106]]"/>
+      <param name="balance" value="1.0"/>
+      <param name="crop_fov_deg" value="90.0"/>
+      <param name="full_hfov" value="150.0"/>
+  </node>
+  <node pkg="image_processing" type="fisheye_undistorter.py" name="undistorter2" output="screen">
+      <param name="input_topic" value="/camera2/color/image_raw/compressed"/>
+      <param name="output_topic" value="/camera2_fix/color/image_raw/compressed"/>
+      <param name="factor" value="1.0"/>
+      <param name="K" value="[[261.380641, 0.200012653, 320],[0, 349.054677, 236.542501],[0, 0, 1]]"/>
+      <param name="D" value="[[-0.04916146],[0.14139853],[-0.19872415],[0.09457193]]"/>
+      <param name="balance" value="1.0"/>
+      <param name="crop_fov_deg" value="90.0"/>
+      <param name="full_hfov" value="150.0"/>
+  </node>
+  <node pkg="image_processing" type="fisheye_undistorter.py" name="undistorter3" output="screen">
+      <param name="input_topic" value="/camera3/color/image_raw/compressed"/>
+      <param name="output_topic" value="/camera3_fix/color/image_raw/compressed"/>
+      <param name="factor" value="1.0"/>
+      <param name="K" value="[[268.06554187, 1.51263281, 320],[0, 356.57309093, 231.71146684],[0, 0, 1.]]"/>
+      <param name="D" value="[[0.05184647],[0.01756823],[-0.02638422],[0.00762106]]"/>
+      <param name="balance" value="1.0"/>
+      <param name="crop_fov_deg" value="90.0"/>
+      <param name="full_hfov" value="150.0"/>
+  </node>
+</launch>
+

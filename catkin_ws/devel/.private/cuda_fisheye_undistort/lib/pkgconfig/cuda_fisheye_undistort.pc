@@ -1,0 +1,8 @@
+prefix=/home/leowang707/opencv-cuda-plus/catkin_ws/devel/.private/cuda_fisheye_undistort
+
+Name: cuda_fisheye_undistort
+Description: Description of cuda_fisheye_undistort
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: cv_bridge image_transport roscpp sensor_msgs

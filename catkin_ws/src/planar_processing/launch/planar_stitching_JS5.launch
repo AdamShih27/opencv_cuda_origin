@@ -1,0 +1,34 @@
+<launch>
+    <!-- ====== 全域可調參數區 ====== -->
+    <arg name="sub_camera_topic_left"    default="/camera1_fix/color/image_raw/compressed"/>
+    <arg name="sub_camera_topic_mid"     default="/camera2_fix/color/image_raw/compressed"/>
+    <arg name="sub_camera_topic_right"   default="/camera3_fix/color/image_raw/compressed"/>
+    <arg name="pub_camera_topic"         default="/camera_stitched/color/image_raw/compressed"/>
+    <arg name="stitch_timer_hz"          default="30"/>
+    <arg name="output_image_dir"         default="$(find planar_processing)/src/planar_homo/result"/>
+    <arg name="output_homo_dir_h1"       default="$(find planar_processing)/src/planar_homo/per_H1"/>
+    <arg name="output_homo_dir_h2"       default="$(find planar_processing)/src/planar_homo/per_H2"/>
+    <arg name="h1_path"                  default="$(find planar_processing)/src/planar_homo/global_H1/JS5/H1_12.npy"/>
+    <arg name="h2_path"                  default="$(find planar_processing)/src/planar_homo/global_H2/JS5/H2_12.npy"/>
+
+    <!-- ====== 節點區 ====== -->
+    <!-- 🟢 啟動 RTSP 相機 -->
+    <node name="multi_rtsp_to_compressed_node" pkg="image_processing" type="rtsp_to_compressed_image_JS5.py" output="screen" />
+
+    <!-- 🔵 魚眼去畸變 -->
+    <node name="multi_fisheye_undistorter" pkg="image_processing" type="camera_fix_JS5.py" output="screen" />
+
+    <!-- 🟣 GPU 拼接 -->
+    <node name="image_stitcher_GPU" pkg="planar_processing" type="planar_stitching_node.py" output="screen">
+        <param name="sub_camera_topic_left"  value="$(arg sub_camera_topic_left)"/>
+        <param name="sub_camera_topic_mid"   value="$(arg sub_camera_topic_mid)"/>
+        <param name="sub_camera_topic_right" value="$(arg sub_camera_topic_right)"/>
+        <param name="pub_camera_topic"       value="$(arg pub_camera_topic)"/>
+        <param name="stitch_timer_hz"        value="$(arg stitch_timer_hz)"/>
+        <param name="output_image_dir"       value="$(arg output_image_dir)"/>
+        <param name="output_homo_dir_h1"     value="$(arg output_homo_dir_h1)" />
+        <param name="output_homo_dir_h2"     value="$(arg output_homo_dir_h2)" />
+        <param name="h1_path"                value="$(arg h1_path)"/>
+        <param name="h2_path"                value="$(arg h2_path)"/>
+    </node>
+</launch>

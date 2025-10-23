@@ -1,0 +1,8 @@
+prefix=/home/leowang707/opencv-cuda-plus/catkin_ws/devel/.private/distance_detector
+
+Name: distance_detector
+Description: Description of distance_detector
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

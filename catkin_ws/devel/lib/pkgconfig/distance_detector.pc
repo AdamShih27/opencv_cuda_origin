@@ -1,0 +1,1 @@
+/home/leowang707/opencv-cuda-plus/catkin_ws/devel/.private/distance_detector/lib/pkgconfig/distance_detector.pc

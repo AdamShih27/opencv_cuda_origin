@@ -1,0 +1,1 @@
+/home/leowang707/opencv-cuda-plus/catkin_ws/devel/.private/pano_with_distance/share/pano_with_distance/cmake/pano_with_distanceConfig.cmake

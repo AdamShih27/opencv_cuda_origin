@@ -1,0 +1,6 @@
+devel_space: /home/leowang707/opencv-cuda-plus/catkin_ws/devel
+install: false
+install_space: /home/leowang707/opencv-cuda-plus/catkin_ws/install
+profile: default
+source_space: /home/leowang707/opencv-cuda-plus/catkin_ws/src
+workspace: /home/leowang707/opencv-cuda-plus/catkin_ws

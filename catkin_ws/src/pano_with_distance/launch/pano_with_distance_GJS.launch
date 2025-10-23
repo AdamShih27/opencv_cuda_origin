@@ -1,0 +1,100 @@
+<launch>
+  <!-- === [General Params] === -->
+  <arg name="left_topic"               default="/camera1_fix/color/image_raw/compressed"/>
+  <arg name="mid_topic"                default="/camera2_fix/color/image_raw/compressed"/>
+  <arg name="right_topic"              default="/camera3_fix/color/image_raw/compressed"/>
+  <arg name="output_topic"             default="/camera_pano_stitched/image_raw/compressed"/>
+  <arg name="output_mask_topic"        default="/camera_pano_masked/image_raw/compressed"/>
+  <arg name="resize_w"                 default="640"/>
+  <arg name="focals"                   default="[200,200,200]"/>
+  <arg name="global_homo_left_file"    default="$(find cylindrical_processing)/src/cylindrical_homo/global_H1/GJS/H1_000165.npy"/>
+  <arg name="global_homo_right_file"   default="$(find cylindrical_processing)/src/cylindrical_homo/global_H2/GJS/H2_000165.npy"/>
+  <arg name="per_homo_left_dir"        default="$(find cylindrical_processing)/src/cylindrical_homo/per_H1"/>
+  <arg name="per_homo_right_dir"       default="$(find cylindrical_processing)/src/cylindrical_homo/per_H2"/>
+  <arg name="save_pano_dir"            default="$(find cylindrical_processing)/src/cylindrical_homo/result"/>
+  <arg name="jpeg_quality"             default="100"/>
+  <arg name="blend_width"              default="30"/>
+  <arg name="orb_max_features"         default="2000"/>
+  <arg name="crop_rect"                default="[650,120,660,240]"/>
+
+  <!-- mask core 參數 -->
+  <arg name="horizon_resize_factor"    default="1.0"/>
+  <arg name="marker_radius"            default="1"/>
+  <arg name="marker_thickness"         default="1"/>
+  <arg name="marker_font_scale"        default="0.4"/>
+  <arg name="marker_text_dx"           default="4"/>
+  <arg name="marker_text_dy"           default="2"/>
+  <arg name="marker_colors"            default="[[255,255,0],[255,255,0],[255,255,0]]"/>
+  <arg name="camera_angle"             default="[-60,0,60]"/>
+  <arg name="angle_colors"             default="[[255,0,255],[255,0,255],[255,0,255]]"/>
+
+  <!-- horizon core參數 -->
+  <arg name="base_point"               default="[320,410]"/>
+  <arg name="distance_mark_distances"  default="[0,100,500,5000]"/>
+  <arg name="distance_alpha_intervals" default="[2.5,2.5,2.5]"/>
+  <arg name="distance_intervals"       default="[0,100,500,5000]"/>
+  <arg name="distance_camera_height"   default="3.0"/>
+  <arg name="distance_front_distance"  default="10.0"/>
+  <arg name="distance_D_horizon"       default="5000"/>
+  <arg name="roi_ratio"                default="[0.3,0.7,0.3,0.7]"/>
+ 
+
+  <!-- ========== 節點定義 ========== -->
+
+  <!-- (1) RTSP 相機 node -->
+  <node name="multi_rtsp_to_compressed_node"
+        pkg="image_processing"
+        type="rtsp_to_compressed_image_GJS.py"
+        output="screen" />
+
+  <!-- (2) 魚眼去畸變 node -->
+  <node name="multi_fisheye_undistorter"
+        pkg="image_processing"
+        type="camera_fix_GJS.py"
+        output="screen" />
+
+  <!-- (3) 全景拼接主節點（支援 pano + pano_mask + horizon + marker 參數）-->
+  <node name="pano_stitcher"
+        pkg="pano_with_distance"
+        type="pano_with_distance_node.py"
+        output="screen">
+    <!-- pano stitcher core 參數 -->
+    <param name="~left_topic"              value="$(arg left_topic)"/>
+    <param name="~mid_topic"               value="$(arg mid_topic)"/>
+    <param name="~right_topic"             value="$(arg right_topic)"/>
+    <param name="~output_topic"            value="$(arg output_topic)"/>
+    <param name="~output_mask_topic"       value="$(arg output_mask_topic)"/>
+    <param name="~resize_w"                value="$(arg resize_w)"/>
+    <param name="~focals"                  value="$(arg focals)"/>
+    <param name="~global_homo_left_file"   value="$(arg global_homo_left_file)"/>
+    <param name="~global_homo_right_file"  value="$(arg global_homo_right_file)"/>
+    <param name="~per_homo_left_dir"       value="$(arg per_homo_left_dir)"/>
+    <param name="~per_homo_right_dir"      value="$(arg per_homo_right_dir)"/>
+    <param name="~save_pano_dir"           value="$(arg save_pano_dir)"/>
+    <param name="~jpeg_quality"            value="$(arg jpeg_quality)"/>
+    <param name="~blend_width"             value="$(arg blend_width)"/>
+    <param name="~orb_max_features"        value="$(arg orb_max_features)"/>
+    <param name="~crop_rect"               value="$(arg crop_rect)"/>
+
+    <!-- mask core 參數 -->
+    <param name="~horizon_resize_factor"   value="$(arg horizon_resize_factor)"/>
+    <param name="~marker_radius"           value="$(arg marker_radius)"/>
+    <param name="~marker_thickness"        value="$(arg marker_thickness)"/>
+    <param name="~marker_font_scale"       value="$(arg marker_font_scale)"/>
+    <param name="~marker_text_dx"          value="$(arg marker_text_dx)"/>
+    <param name="~marker_text_dy"          value="$(arg marker_text_dy)"/>
+    <param name="~marker_colors"           value="$(arg marker_colors)"/>
+    <param name="~camera_angle"            value="$(arg camera_angle)"/>
+    <param name="~angle_colors"            value="$(arg angle_colors)"/>
+    
+    <!-- horizon core參數 -->
+    <param name="~base_point"              value="$(arg base_point)"/>
+    <param name="~distance_mark_distances"  value="$(arg distance_mark_distances)"/>
+    <param name="~distance_alpha_intervals" value="$(arg distance_alpha_intervals)"/>
+    <param name="~distance_intervals"       value="$(arg distance_intervals)"/>
+    <param name="~distance_camera_height"   value="$(arg distance_camera_height)"/>
+    <param name="~distance_front_distance"  value="$(arg distance_front_distance)"/>
+    <param name="~distance_D_horizon"       value="$(arg distance_D_horizon)"/>
+    <param name="~roi_ratio"                value="$(arg roi_ratio)"/>
+  </node>
+</launch>

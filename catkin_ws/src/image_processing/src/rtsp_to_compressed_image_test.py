@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import rospy
+import cv2
+import numpy as np
+import time
+from sensor_msgs.msg import CompressedImage
+from threading import Thread
+from nvjpeg import NvJpeg  # ✅ 引入 NVIDIA JPEG 編碼器
+
+class RTSPCameraPublisher:
+    def __init__(self, name, rtsp_url, topic_name):
+        self.name = name
+        self.rtsp_url = rtsp_url
+        self.topic_name = topic_name
+        self.publisher = rospy.Publisher(topic_name, CompressedImage, queue_size=1)
+
+        self.nvjpeg = NvJpeg()  # ✅ 初始化 GPU JPEG 編碼器
+        
+        # H.264 解碼 pipeline
+        # self.pipeline = (
+        #     f"rtspsrc location={rtsp_url} latency=0 protocols=udp drop-on-latency=true ! "
+        #     "rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! "
+        #     "videoconvert n-threads=2 ! video/x-raw,format=BGR ! "
+        #     "appsink drop=true max-buffers=1 sync=false"
+        # )
+
+        # H.265 GStreamer pipeline
+        self.pipeline = (
+            f"rtspsrc location={rtsp_url} latency=0 protocols=udp drop-on-latency=true ! "
+            "rtph265depay ! h265parse ! avdec_h265 ! videoconvert ! "
+            "videoconvert n-threads=2 ! video/x-raw,format=BGR ! "
+            "appsink drop=true max-buffers=1 sync=false"
+        )
+
+        self.cap = cv2.VideoCapture(self.pipeline, cv2.CAP_GSTREAMER)
+        if not self.cap.isOpened():
+            rospy.logerr(f"[{self.name}] ❌ 無法開啟 RTSP 串流：{rtsp_url}")
+            self.cap = None
+
+        self.thread = Thread(target=self.stream_loop)
+        self.thread.daemon = True
+        self.running = True
+
+    def start(self):
+        if self.cap:
+            self.thread.start()
+
+    def stop(self):
+        self.running = False
+        if self.cap:
+            self.cap.release()
+
+    def stream_loop(self):
+        while not rospy.is_shutdown() and self.running:
+            if self.cap is None:
+                time.sleep(1)
+                continue
+
+            ret, frame = self.cap.read()
+            if not ret:
+                rospy.logwarn(f"[{self.name}] ⚠️ 讀取 RTSP 影格失敗")
+                time.sleep(0.1)
+                continue
+
+            try:
+                msg = CompressedImage()
+                msg.header.stamp = rospy.Time.now()
+                msg.format = "jpeg"
+
+                # ✅ 使用 nvJPEG 進行 GPU 編碼
+                try:
+                    jpeg_bytes = self.nvjpeg.encode(frame, 100)
+                    msg.data = jpeg_bytes
+                    self.publisher.publish(msg)
+                except Exception as e:
+                    rospy.logwarn(f"[{self.name}] ❌ nvJPEG 編碼失敗: {e}")
+                    time.sleep(0.05)
+
+            except Exception as e:
+                rospy.logerr(f"[{self.name}] 發布過程出錯：{e}")
+                time.sleep(0.1)
+
+def main():
+    rospy.init_node("multi_rtsp_to_compressed_node", anonymous=True)
+
+    cameras = [
+        {"name": "cam1", "url": "rtsp://admin:admin@192.168.1.108:554/video", "topic": "/camera1/color/image_raw/compressed"},
+    ]
+
+    nodes = []
+    for cam in cameras:
+        node = RTSPCameraPublisher(cam["name"], cam["url"], cam["topic"])
+        node.start()
+        nodes.append(node)
+
+    rospy.loginfo("✅ 所有 RTSP 相機串流節點啟動完成。")
+    rospy.spin()
+
+    for node in nodes:
+        node.stop()
+
+if __name__ == "__main__":
+    main()
+
+# #test for raw
+# #!/usr/bin/env python3
+# # -*- coding: utf-8 -*-
+
+# import rospy, cv2, time
+# import numpy as np
+# from sensor_msgs.msg import Image
+# from cv_bridge import CvBridge
+# from threading import Thread
+# from nvjpeg import NvJpeg
+
+# class RTSPRawPublisher:
+#     def __init__(self, name, rtsp_url, topic_name):
+#         self.pub = rospy.Publisher(topic_name, Image, queue_size=1)
+#         self.cap = cv2.VideoCapture(
+#             f"rtspsrc location={rtsp_url} latency=0 protocols=udp drop-on-latency=true ! "
+#             "rtph265depay ! h265parse ! avdec_h265 ! videoconvert ! "
+#             "video/x-raw,format=BGR ! appsink drop=true max-buffers=1 sync=false",
+#             cv2.CAP_GSTREAMER)
+#         self.bridge = CvBridge()
+#         self.thread = Thread(target=self.loop)
+#         self.thread.daemon = True
+
+#     def start(self): self.thread.start()
+#     def loop(self):
+#         while not rospy.is_shutdown():
+#             ret, frame = self.cap.read()
+#             if not ret:
+#                 rospy.logwarn("讀取 RTSP 失敗")
+#                 time.sleep(0.1); continue
+#             msg = self.bridge.cv2_to_imgmsg(frame, encoding="bgr8")
+#             msg.header.stamp = rospy.Time.now()
+#             self.pub.publish(msg)
+
+# if __name__ == "__main__":
+#     rospy.init_node("rtsp_raw_publisher")
+#     mp = RTSPRawPublisher("cam", "rtsp://admin:admin@192.168.1.108:554/video", "/camera1/color/image_raw/raw")
+#     mp.start()
+#     rospy.spin()
+

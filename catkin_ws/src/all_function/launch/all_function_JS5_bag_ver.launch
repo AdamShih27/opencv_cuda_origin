@@ -1,0 +1,143 @@
+<launch>
+  <!-- === [General Params] === -->
+  <arg name="left_topic"               default="/camera1_fix/color/image_raw/compressed"/>
+  <arg name="mid_topic"                default="/camera2_fix/color/image_raw/compressed"/>
+  <arg name="right_topic"              default="/camera3_fix/color/image_raw/compressed"/>
+  <arg name="output_mask_topic"        default="/camera_pano_masked/image_raw/compressed"/>
+  <arg name="focals"                   default="[200,200,200]"/>
+
+  <!-- <arg name="global_homo_left_file"    default="$(find cylindrical_processing)/src/cylindrical_homo/global_H1/JS5/H1_000104.npy"/>
+  <arg name="global_homo_right_file"   default="$(find cylindrical_processing)/src/cylindrical_homo/global_H2/JS5/H2_000104.npy"/>
+  <arg name="crop_rect"                default="[258,70,650,325]"/> -->
+
+  <arg name="global_homo_left_file"    default="$(find cylindrical_processing)/src/cylindrical_homo/global_H1/JS5/H1_000043.npy"/>
+  <arg name="global_homo_right_file"   default="$(find cylindrical_processing)/src/cylindrical_homo/global_H2/JS5/H2_000043.npy"/>
+  <arg name="crop_rect"                default="[300,90,600,300]"/>
+
+  <arg name="per_homo_left_dir"        default="$(find cylindrical_processing)/src/cylindrical_homo/per_H1"/>
+  <arg name="per_homo_right_dir"       default="$(find cylindrical_processing)/src/cylindrical_homo/per_H2"/>
+  <arg name="save_pano_dir"            default="$(find cylindrical_processing)/src/cylindrical_homo/result"/>
+  <arg name="jpeg_quality"             default="100"/>
+  <arg name="blend_width"              default="30"/>
+  <arg name="orb_max_features"         default="2000"/>
+  <arg name="scale_factor"             default="1.25" />
+
+
+  <!-- mask core 參數 -->
+  <arg name="horizon_resize_factor"    default="1.0"/>
+  <arg name="marker_radius"            default="1"/>
+  <arg name="marker_thickness"         default="1"/>
+  <arg name="marker_font_scale"        default="0.4"/>
+  <arg name="camera_angle"             default="[-60,0,60]"/>
+  <arg name="angle_colors"             default="[[255,0,255],[255,0,255],[255,0,255]]"/>
+  <arg name="left_bound_angle"         default="-105"/>
+  <arg name="right_bound_angle"        default="105"/>
+  
+  <!-- distance core參數  -->
+  <arg name="focal_length_px"          default="200"/>
+
+  <!-- horizon core參數 -->
+  <arg name="roi_ratio"                default="[0.3,0.7,0.3,0.7]"/>
+
+  <!-- 推論參數 (Segformer) -->
+  <arg name="seg_model_path" default="$(find all_function)/models/Segformer/segformer_model"/>
+
+  <!-- 推論參數 (RT-DETR) -->
+  <arg name="detr_model_path" default="$(find all_function)/models/RT_DETR/200_6_best.pt"/>
+  <arg name="conf"       default="0.6"/>
+  <arg name="imgsz"      default="672"/>
+
+  <!-- TF 轉換參數 -->
+  <!-- <arg name="source_frame" default="js/front_lidar_link"/> -->
+  <arg name="source_frame" default="map"/>
+  <arg name="target_frame" default="map"/>
+
+  <!-- ========== 節點定義 ========== -->
+
+  <!-- 🟢 相機去畸變 node (取消註解使用) -->
+  <node pkg="image_processing" type="fisheye_undistorter.py" name="undistorter1" output="screen">
+      <param name="input_topic" value="/camera1/color/image_raw/compressed"/>
+      <param name="output_topic" value="/camera1_fix/color/image_raw/compressed"/>
+      <param name="factor" value="1.25"/>
+      <param name="K" value="[[2.94104211e+02, 1.00501200e-01, 3.17351129e+02],[0.00000000e+00,3.90626759e+02,2.44645859e+02],[0,0,1]]"/>
+      <param name="D" value="[[-0.15439177], [ 0.45612835], [-0.79521684], [ 0.46727377]]"/>
+      <param name="balance" value="1.0"/>
+      <param name="crop_fov_deg" value="90.0"/>
+      <param name="full_hfov" value="150.0"/>
+  </node>
+  <node pkg="image_processing" type="fisheye_undistorter.py" name="undistorter2" output="screen">
+      <param name="input_topic" value="/camera2/color/image_raw/compressed"/>
+      <param name="output_topic" value="/camera2_fix/color/image_raw/compressed"/>
+      <param name="factor" value="1.25"/>
+      <param name="K" value="[[2.94104211e+02, 1.00501200e-01, 3.17351129e+02],[0.00000000e+00,3.90626759e+02,2.44645859e+02],[0,0,1]]"/>
+      <param name="D" value="[[-0.15439177], [ 0.45612835], [-0.79521684], [ 0.46727377]]"/>
+      <param name="balance" value="1.0"/>
+      <param name="crop_fov_deg" value="90.0"/>
+      <param name="full_hfov" value="150.0"/>
+  </node>
+  <node pkg="image_processing" type="fisheye_undistorter.py" name="undistorter3" output="screen">
+      <param name="input_topic" value="/camera3/color/image_raw/compressed"/>
+      <param name="output_topic" value="/camera3_fix/color/image_raw/compressed"/>
+      <param name="factor" value="1.25"/>
+      <param name="K" value="[[2.94104211e+02, 1.00501200e-01, 3.17351129e+02],[0.00000000e+00,3.90626759e+02,2.44645859e+02],[0,0,1]]"/>
+      <param name="D" value="[[-0.15439177], [ 0.45612835], [-0.79521684], [ 0.46727377]]"/>
+      <param name="balance" value="1.0"/>
+      <param name="crop_fov_deg" value="90.0"/>
+      <param name="full_hfov" value="150.0"/>
+  </node>
+
+
+  <!-- (2) 全景拼接主節點 -->
+  <node name="pano_stitcher"
+        pkg="all_function"
+        type="pano_with_distance_node.py"
+        output="screen">
+
+    <!-- pano stitcher core 參數 -->
+    <param name="~left_topic"              value="$(arg left_topic)"/>
+    <param name="~mid_topic"               value="$(arg mid_topic)"/>
+    <param name="~right_topic"             value="$(arg right_topic)"/>
+    <param name="~output_mask_topic"       value="$(arg output_mask_topic)"/>
+    <param name="~focals"                  value="$(arg focals)"/>
+    <param name="~global_homo_left_file"   value="$(arg global_homo_left_file)"/>
+    <param name="~global_homo_right_file"  value="$(arg global_homo_right_file)"/>
+    <param name="~per_homo_left_dir"       value="$(arg per_homo_left_dir)"/>
+    <param name="~per_homo_right_dir"      value="$(arg per_homo_right_dir)"/>
+    <param name="~save_pano_dir"           value="$(arg save_pano_dir)"/>
+    <param name="~jpeg_quality"            value="$(arg jpeg_quality)"/>
+    <param name="~blend_width"             value="$(arg blend_width)"/>
+    <param name="~orb_max_features"        value="$(arg orb_max_features)"/>
+    <param name="~crop_rect"               value="$(arg crop_rect)"/>
+    <param name="scale_factor"             value="$(arg scale_factor)"/>
+
+
+    <!-- mask core 參數 -->
+    <param name="~horizon_resize_factor"   value="$(arg horizon_resize_factor)"/>
+    <param name="~marker_radius"           value="$(arg marker_radius)"/>
+    <param name="~marker_thickness"        value="$(arg marker_thickness)"/>
+    <param name="~marker_font_scale"       value="$(arg marker_font_scale)"/>
+    <param name="~camera_angle"            value="$(arg camera_angle)"/>
+    <param name="~angle_colors"            value="$(arg angle_colors)"/>
+    <param name="left_bound_angle"         value="$(arg left_bound_angle)"/>
+    <param name="right_bound_angle"        value="$(arg right_bound_angle)"/>
+
+    <!-- distance core 參數 -->
+    <param name="~focal_length_px"                value="$(arg focal_length_px)"/>
+
+    <!-- horizon core參數 -->
+    <param name="~roi_ratio"                value="$(arg roi_ratio)"/>
+
+    <!-- 推論參數 -->
+    <param name="~seg_model_path" value="$(arg seg_model_path)"/>
+
+    <!-- 推論參數 -->
+    <param name="~detr_model_path" value="$(arg detr_model_path)"/>
+    <param name="~conf"       value="$(arg conf)"/>
+    <param name="~imgsz"      value="$(arg imgsz)"/>
+
+    <!-- TF 轉換參數 -->
+    <param name="~source_frame" value="$(arg source_frame)"/>
+    <param name="~target_frame" value="$(arg target_frame)"/>
+
+  </node>
+</launch>

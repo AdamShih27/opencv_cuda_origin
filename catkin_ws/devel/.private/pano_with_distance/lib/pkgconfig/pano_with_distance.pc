@@ -1,0 +1,8 @@
+prefix=/home/leowang707/opencv-cuda-plus/catkin_ws/devel/.private/pano_with_distance
+
+Name: pano_with_distance
+Description: Description of pano_with_distance
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

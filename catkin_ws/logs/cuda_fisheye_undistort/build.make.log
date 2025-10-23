@@ -1,0 +1,6 @@
+[35m[1mScanning dependencies of target fisheye_undistorter_cpp[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/fisheye_undistorter_cpp.dir/src/fisheye_undistorter_cpp.cpp.o[0m
+[100%] [32m[1mLinking CXX executable /home/leowang707/opencv-cuda-plus/catkin_ws/devel/.private/cuda_fisheye_undistort/lib/cuda_fisheye_undistort/fisheye_undistorter_cpp[0m
+/usr/bin/ld: warning: libopencv_features2d.so.4.2, needed by /usr/lib/x86_64-linux-gnu/libopencv_calib3d.so.4.2.0, may conflict with libopencv_features2d.so.4.5
+/usr/bin/ld: warning: libopencv_core.so.4.5, needed by /usr/local/lib/libopencv_cudawarping.so.4.5.2, may conflict with libopencv_core.so.4.2
+[100%] Built target fisheye_undistorter_cpp

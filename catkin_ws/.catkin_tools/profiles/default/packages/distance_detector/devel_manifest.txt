@@ -1,0 +1,4 @@
+distance_detector
+/home/leowang707/opencv-cuda-plus/catkin_ws/devel/.private/distance_detector/share/distance_detector/cmake/distance_detectorConfig.cmake /home/leowang707/opencv-cuda-plus/catkin_ws/devel/share/distance_detector/cmake/distance_detectorConfig.cmake
+/home/leowang707/opencv-cuda-plus/catkin_ws/devel/.private/distance_detector/share/distance_detector/cmake/distance_detectorConfig-version.cmake /home/leowang707/opencv-cuda-plus/catkin_ws/devel/share/distance_detector/cmake/distance_detectorConfig-version.cmake
+/home/leowang707/opencv-cuda-plus/catkin_ws/devel/.private/distance_detector/lib/pkgconfig/distance_detector.pc /home/leowang707/opencv-cuda-plus/catkin_ws/devel/lib/pkgconfig/distance_detector.pc

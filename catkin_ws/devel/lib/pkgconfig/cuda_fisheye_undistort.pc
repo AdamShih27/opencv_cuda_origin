@@ -1,0 +1,1 @@
+/home/leowang707/opencv-cuda-plus/catkin_ws/devel/.private/cuda_fisheye_undistort/lib/pkgconfig/cuda_fisheye_undistort.pc

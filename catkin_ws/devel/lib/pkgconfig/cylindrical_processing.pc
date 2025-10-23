@@ -1,0 +1,1 @@
+/home/leowang707/opencv-cuda-plus/catkin_ws/devel/.private/cylindrical_processing/lib/pkgconfig/cylindrical_processing.pc

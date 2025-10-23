@@ -1,0 +1,8 @@
+prefix=/home/leowang707/opencv-cuda-plus/catkin_ws/install
+
+Name: all_function
+Description: Description of all_function
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

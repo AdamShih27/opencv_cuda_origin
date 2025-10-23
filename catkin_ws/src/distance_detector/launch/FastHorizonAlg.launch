@@ -1,0 +1,52 @@
+<launch>
+  <!-- Camera-1 -->
+  <node pkg="distance_detector" type="FastHorizonAlg_node.py"
+        name="horizon_cam1" output="screen">
+    <param name="image_topic"   value="/camera1_fix/color/image_raw/compressed"/>
+    <param name="pub_topic"     value="/cam1/horizon/compressed"/>
+    <param name="base_point"    value="[320,410]"/>
+    <param name="resize_factor" value="1"/>
+    <param name="jpeg_quality"  value="100"/>
+    <!-- Camera-1專屬參數 -->
+    <param name="alpha_intervals"           value="[2.5, 2.5, 2.5, 2.5, 2.5]"/>
+    <param name="alpha_distance_intervals"  value="[0,100,500,1000,2000,5000]"/>
+    <param name="mark_distances"            value="[0,100,500,1000,2000,5000]"/>
+    <param name="angle_label"               value="-60"/>
+    <param name="angle_label_offset"        value="30"/>
+    <param name="D_horizon"                 value="5000"/>
+  </node>
+
+  <!-- Camera-2 -->
+  <node pkg="distance_detector" type="FastHorizonAlg_node.py"
+        name="horizon_cam2" output="screen">
+    <param name="image_topic"   value="/camera2_fix/color/image_raw/compressed"/>
+    <param name="pub_topic"     value="/cam2/horizon/compressed"/>
+    <param name="base_point"    value="[320,410]"/>
+    <param name="resize_factor" value="1"/>
+    <param name="jpeg_quality"  value="100"/>
+    <!-- Camera-2專屬參數 -->
+    <param name="alpha_intervals"           value="[2.5, 2.5, 2.5, 2.5, 2.5]"/>
+    <param name="alpha_distance_intervals"  value="[0,100,500,1000,2000,5000]"/>
+    <param name="mark_distances"            value="[0,100,500,1000,2000,5000]"/>
+    <param name="angle_label"               value="0"/>
+    <param name="angle_label_offset"        value="30"/>
+    <param name="D_horizon"                 value="5000"/>
+  </node>
+
+  <!-- Camera-3 -->
+  <node pkg="distance_detector" type="FastHorizonAlg_node.py"
+        name="horizon_cam3" output="screen">
+    <param name="image_topic"   value="/camera3_fix/color/image_raw/compressed"/>
+    <param name="pub_topic"     value="/cam3/horizon/compressed"/>
+    <param name="base_point"    value="[320,410]"/>
+    <param name="resize_factor" value="1"/>
+    <param name="jpeg_quality"  value="100"/>
+    <!-- Camera-3專屬參數 -->
+    <param name="alpha_intervals"           value="[2.5, 2.5, 2.5, 2.5, 2.5]"/>
+    <param name="alpha_distance_intervals"  value="[0,100,500,1000,2000,5000]"/>
+    <param name="mark_distances"            value="[0,100,500,1000,2000,5000]"/>
+    <param name="angle_label"               value="60"/>
+    <param name="angle_label_offset"        value="30"/>
+    <param name="D_horizon"                 value="5000"/>
+  </node>
+</launch>

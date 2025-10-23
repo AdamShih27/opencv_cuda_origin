@@ -1,0 +1,8 @@
+prefix=/home/leowang707/opencv-cuda-plus/catkin_ws/devel/.private/cylindrical_processing
+
+Name: cylindrical_processing
+Description: Description of cylindrical_processing
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

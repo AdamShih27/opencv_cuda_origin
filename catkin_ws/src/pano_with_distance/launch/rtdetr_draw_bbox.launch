@@ -1,0 +1,12 @@
+<launch>
+  <node pkg="pano_with_distance"
+        type="rtdetr_ros_draw_bbox.py"
+        name="rtdetr_draw_node"
+        output="screen">
+    <param name="model_path" value="$(find pano_with_distance)/models/80_4_last.pt" />
+    <param name="input_topic" value="/camera_pano_stitched/image_raw/compressed" />
+    <param name="output_topic" value="/rtdetr/output/image/compressed" />
+    <param name="conf" value="0.5" />
+    <param name="imgsz" value="640" />
+  </node>
+</launch>
