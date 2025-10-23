@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>RTSP 串流嵌入頁面</title>
+  <script>
+    const BASE_IP = "192.168.0.206";
+    const BASE_PORT = "8889";
+
+    const streams = [
+      { title: "Camera 串流", path: "mystream_h264" },
+      { title: "Cameraback 串流", path: "cameraback_h264" },
+      { title: "Radar 串流", path: "radar_h264" },
+      { title: "DERT 串流", path: "detr_h264" },
+    ];
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const body = document.body;
+
+      const h1 = document.createElement("h1");
+      h1.textContent = "嵌入 MediaMTX 串流";
+      body.appendChild(h1);
+
+      for (const stream of streams) {
+        const h2 = document.createElement("h2");
+        h2.textContent = stream.title;
+
+        const iframe = document.createElement("iframe");
+        iframe.src = `http://${BASE_IP}:${BASE_PORT}/${stream.path}/`;
+        iframe.width = 800;
+        iframe.height = 450;
+        iframe.frameBorder = 0;
+        iframe.allowFullscreen = true;
+
+        body.appendChild(h2);
+        body.appendChild(iframe);
+      }
+    });
+  </script>
+</head>
+<body>
+</body>
+</html>
