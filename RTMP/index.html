@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>HLS 直播播放</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.14.3/video-js.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      margin-top: 40px;
+    }
+    video {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📡 HLS 多路直播串流</h1>
+
+  <div id="videoContainer"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.14.3/video.min.js"></script>
+  <script>
+    const BASE_IP = "192.168.0.180";
+    const BASE_PORT = "8001";
+    const streamPath = "hls";  // MediaMTX 預設 HLS 路徑為 /hls
+
+    const streams = [
+      { title: "Camera 串流", path: "mystream" },
+      { title: "Cameraback 串流", path: "cameraback" },
+      { title: "Radar 串流", path: "radar" },
+      { title: "DETR 串流", path: "detr" }
+    ];
+
+    const container = document.getElementById("videoContainer");
+
+    streams.forEach((stream, index) => {
+      // 標題
+      const h2 = document.createElement("h2");
+      h2.textContent = stream.title;
+
+      // video element
+      const video = document.createElement("video");
+      video.id = `videoPlayer${index}`;
+      video.className = "video-js vjs-default-skin";
+      video.setAttribute("controls", true);
+      video.setAttribute("autoplay", true);
+      video.setAttribute("width", "800");
+      video.setAttribute("height", "450");
+
+      const source = document.createElement("source");
+      source.src = `http://${BASE_IP}:${BASE_PORT}/${streamPath}/${stream.path}.m3u8`;
+      source.type = "application/x-mpegURL";
+      video.appendChild(source);
+
+      // 加到 DOM
+      container.appendChild(h2);
+      container.appendChild(video);
+
+      // 初始化播放器
+      videojs(video.id, { techOrder: ["html5"] });
+    });
+  </script>
+</body>
+</html>
