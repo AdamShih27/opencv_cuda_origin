@@ -1,0 +1,6 @@
+sudo nvidia-cuda-mps-control -d
+ps -ef | grep mps
+echo quit | sudo nvidia-cuda-mps-control
+
+sudo pkill -f nvidia-cuda-mps-control
+sudo pkill -f nvidia-cuda-mps-server
